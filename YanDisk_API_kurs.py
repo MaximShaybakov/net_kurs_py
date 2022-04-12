@@ -2,12 +2,10 @@ import os
 import requests
 from pprint import pprint
 import time
-from tqdm import tqdm
+from progress.bar import IncrementalBar
 
 
 def run():
-    for i in tqdm('__main__', desc='Sending data to Yandex disk'):
-        time.sleep(2)
     ProfileYD = WriteYaDisk()
     ProfileYD.upload_file_to_disk()
 
@@ -70,9 +68,13 @@ class WriteYaDisk:
         headers = self.headers
         print('Copying files. Wait please...')
         val_photo = 0
+        bar = IncrementalBar('Sending data to Yandex disk: ', max=len(self.write_photo()))
         for name in self.write_photo():
+            bar.next()
             response = requests.put(href[val_photo].get("href", ""), data=open(f'photo/{name.strip()}', 'rb'))
             val_photo += 1
+            time.sleep(1)
+        bar.finish()
         if response.status_code == 201:
             print('Success!')
         else:

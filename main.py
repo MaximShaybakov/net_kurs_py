@@ -2,15 +2,13 @@ import json
 import requests
 from pprint import pprint
 import time
-from tqdm import tqdm
+from progress.bar import IncrementalBar
 from YanDisk_API_kurs import run
 
 
 def show_bar(): # функция запускает всю логику программы
     Profile_1 = APIVk()
     Profile_1.download_photo()
-    for i in tqdm('__main__', desc='Getting data from VK API'):
-        time.sleep(0.8)
 
 
 class APIVk: # инициализация класса
@@ -25,7 +23,7 @@ class APIVk: # инициализация класса
         return token_vk
 
 
-    def get_headers(self, ID=552934290): # параметры запроса к api vk метода photos.get для ID 552934290
+    def get_headers(self): # параметры запроса к api vk метода photos.get для ID 552934290
         return {
             'access_token': self.token, #токен обновлять ежедневно с разрешением на фото
             'owner_id': f'{self.ID}',
@@ -91,11 +89,15 @@ class APIVk: # инициализация класса
 
     def download_photo(self): #загрузка фото с сервера на локальный диск в папку
         counter = 0
+        bar = IncrementalBar('Receiving data from VK: ', max=len(self.url_photo_max_size()))
         for photo in self.url_photo_max_size():
+            bar.next()
             img = requests.get(photo)
             with open(f"photo/{self.ls_name()[counter]}.jpeg", "wb") as file:
                 file.write(img.content)
                 counter += 1
+                time.sleep(1)
+        bar.finish()
         return
 
 
