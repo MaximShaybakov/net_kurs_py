@@ -7,7 +7,9 @@ from progress.bar import IncrementalBar
 
 def run():
     ProfileYD = WriteYaDisk()
+    ProfileYD.create_new_folder()
     ProfileYD.upload_file_to_disk()
+    os.rmdir('photo')
 
 
 class WriteYaDisk:
@@ -36,11 +38,17 @@ class WriteYaDisk:
             exit()
 
 
+    def create_new_folder(self):
+        url = f'https://cloud-api.yandex.net/v1/disk/resources?path=%2FPhoto'
+        response = requests.put(url, headers=self.headers)
+        return response.json()
+
+
     def get_upload_link(self):
         '''
         Получение пути на яндекс.диск для загрузки Вашего файла.
         '''
-        upload_url = "https://cloud-api.yandex.net/v1/disk/resources/"
+        upload_url = "https://cloud-api.yandex.net/v1/disk/resources/upload?path=%2FPhoto/"
         headers = self.headers
         link_json_list = []
         with open('photo/photo_info.json') as file:
@@ -48,9 +56,10 @@ class WriteYaDisk:
         num_info = 0
         for name in self.write_photo():
             params = {"path": f'disk:/{name.strip()}', "overwrite": "true"}
-            response = requests.get(upload_url + 'upload', headers=headers, params=params, timeout=10)
+            response = requests.get(upload_url + f'{name.strip()}', headers=headers, params=params, timeout=10)
             link_json_list.append(response.json())
             num_info += 1
+        # print(link_json_list)
         return link_json_list
 
 
@@ -71,7 +80,7 @@ class WriteYaDisk:
         bar = IncrementalBar('Sending data to Yandex disk: ', max=len(self.write_photo()))
         for name in self.write_photo():
             bar.next()
-            response = requests.put(href[val_photo].get("href", ""), data=open(f'photo/{name.strip()}', 'rb'))
+            response = requests.put(self.get_upload_link()[val_photo]['href'], data=open(f'photo/{name.strip()}', 'rb'))
             val_photo += 1
             time.sleep(1)
         bar.finish()

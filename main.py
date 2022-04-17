@@ -1,4 +1,5 @@
 import json
+import os
 import requests
 from pprint import pprint
 import time
@@ -8,6 +9,10 @@ from YanDisk_API_kurs import run
 
 def show_bar(): # функция запускает всю логику программы
     Profile_1 = APIVk()
+    try:
+        os.mkdir('photo')
+    except FileExistsError:
+        print("Folder is created")
     Profile_1.download_photo()
 
 
