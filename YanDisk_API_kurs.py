@@ -1,15 +1,16 @@
 import os
 import requests
-from pprint import pprint
 import time
 from progress.bar import IncrementalBar
+from main import *
+
 
 
 def run():
     ProfileYD = WriteYaDisk()
     ProfileYD.create_new_folder()
     ProfileYD.upload_file_to_disk()
-    os.rmdir('photo')
+    os.rmdir(f"{APIVk.get_headers()['owner_id']}")
 
 
 class WriteYaDisk:
@@ -51,7 +52,7 @@ class WriteYaDisk:
         upload_url = "https://cloud-api.yandex.net/v1/disk/resources/upload?path=%2FPhoto/"
         headers = self.headers
         link_json_list = []
-        with open('photo/photo_info.json') as file:
+        with open(f'{APIVk.name()}/photo_info.json') as file:
             info = file.read()
         num_info = 0
         for name in self.write_photo():
@@ -59,12 +60,11 @@ class WriteYaDisk:
             response = requests.get(upload_url + f'{name.strip()}', headers=headers, params=params, timeout=10)
             link_json_list.append(response.json())
             num_info += 1
-        # print(link_json_list)
         return link_json_list
 
 
     def write_photo(self):
-        with open('photo/all_names.txt', 'r', encoding='utf-8') as file:
+        with open(f'{APIVk(self.ID)}/all_names.txt', 'r', encoding='utf-8') as file:
             ls_name_photo = file.readlines()
         return ls_name_photo
 
@@ -91,4 +91,5 @@ class WriteYaDisk:
 
 
 if __name__ == '__main__':
+    show_bar()
     run()

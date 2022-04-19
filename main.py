@@ -4,25 +4,25 @@ import requests
 from pprint import pprint
 import time
 from progress.bar import IncrementalBar
-from YanDisk_API_kurs import run
 
 
 def show_bar(): # функция запускает всю логику программы
     Profile_1 = APIVk()
-    try:
-        os.mkdir('photo')
-    except FileExistsError:
-        print("Folder is created")
     Profile_1.download_photo()
+
 
 
 class APIVk: # инициализация класса
     def __init__(self):
         self.token = self.get_token()
         self.ID = int(input('Enter target ID: '))
+        try:
+            os.mkdir(f'{self.ID}')
+        except FileExistsError:
+            print("Folder is created")
 
 
-    def get_token(self): # чтение токена из фа706йла
+    def get_token(self): # чтение токена из файла
         with open('tokens.txt', 'rb') as file:  # укажите путь к файлу с вашим токеном к API VK
             token_vk = file.readlines()[0].strip()
         return token_vk
@@ -76,18 +76,18 @@ class APIVk: # инициализация класса
                 }
             ls_name.append(val['likes']['count'])
             ls_json_info.append(result)
-        with open('photo/photo_info.json', 'w', encoding='utf-8') as file: # запись данных в файл
+        with open(f'{self.ID}/photo_info.json', 'w', encoding='utf-8') as file: # запись данных в файл
             json.dump(ls_json_info, file, ensure_ascii=False, indent=4)
         return ls_json_info
 
 
     def ls_name(self): # создание списка с именами файлов и их запись в файл
         ls_name_photo = []
-        with open('photo/all_names.txt', 'w') as file:
+        with open(f'{self.ID}/all_names.txt', 'w') as file:
             for name_photo in self.get_info_json():
                 ls_name_photo.append(name_photo['name'])
                 file.write(name_photo['name'] + '.jpeg\n')
-        with open('photo/all_names.txt', 'a') as f:
+        with open(f'{self.ID}/all_names.txt', 'a') as f:
             f.write('photo_info.json')
         return ls_name_photo
 
@@ -98,7 +98,7 @@ class APIVk: # инициализация класса
         for photo in self.url_photo_max_size():
             bar.next()
             img = requests.get(photo)
-            with open(f"photo/{self.ls_name()[counter]}.jpeg", "wb") as file:
+            with open(f"{self.ID}/{self.ls_name()[counter]}.jpeg", "wb") as file:
                 file.write(img.content)
                 counter += 1
                 time.sleep(1)
@@ -108,4 +108,3 @@ class APIVk: # инициализация класса
 
 if __name__ == '__main__':
     show_bar()
-    run()
